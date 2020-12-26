@@ -1,14 +1,14 @@
-# Vitis Flow 101 – Part 3 : Meet the Vector-Add Example
+# Vitis Flow 101 – 파트 3 : 벡터 추가 예제 만나기
 
- The example used in this tutorial is a trivial vector-add application. The simplicity of this example allows focusing on the key concepts of FPGA acceleration without being distracted by complicated algorithmic consideration.
+ 이 자습서에 사용 된 예제는 간단한 벡터 추가 응용 프로그램입니다. 이 예제의 단순성은 복잡한 알고리즘 고려 사항에주의를 분산시키지 않고 FPGA 가속의 핵심 개념에 집중할 수 있도록합니다.
 
  
 
-## The Source Code for the Vector-Add Kernel 
+## 벡터 추가 커널의 소스 코드
 
-In this tutorial the hardware accelerator (also referred to as kernel) is modeled in C++. The Vitis flow also supports kernels coded in Verilog or VHDL. A example using an Verilog RTL version of the vector-add kernel can be found [here](https://github.com/Xilinx/Vitis_Accel_Examples/tree/master/rtl_kernels/rtl_vadd).
+이 튜토리얼에서 하드웨어 가속기 (커널이라고도 함)는 C ++로 모델링됩니다. Vitis 흐름은 Verilog 또는 VHDL로 코딩 된 커널도 지원합니다. 벡터 추가 커널의 Verilog RTL 버전을 사용하는 예는 [여기](https://github.com/Xilinx/Vitis_Accel_Examples/tree/master/rtl_kernels/rtl_vadd)에서 찾을 수 있습니다.
 
-Using C++, the description of the hardware accelerator fits in less than 20 lines of code and can be easily and efficiently implemented in FPGA using the Vitis compiler.
+C ++를 사용하면 하드웨어 가속기에 대한 설명이 20 줄 미만의 코드에 적합하며 Vitis 컴파일러를 사용하여 FPGA에서 쉽고 효율적으로 구현할 수 있습니다.
 
 ```cpp
 extern "C" {
@@ -33,30 +33,30 @@ extern "C" {
 ```
 
 
-This simple example highlights two important aspects of C++ kernels:
-1. Vitis requires C++ kernels to be declared as `extern “C”` to avoid name mangling issues
-2. The results of the Vitis compilation process are controlled by the usage of pragmas in the source code. 
+이 간단한 예제는 C ++ 커널의 두 가지 중요한 측면을 강조합니다.
+1. Vitis는 이름 맹글링 문제를 피하기 위해 C ++ 커널을`extern "C"`로 선언해야합니다.
+2. Vitis 컴파일 프로세스의 결과는 소스 코드에서 pragma를 사용하여 제어됩니다.
 
-Other than this, the functionality of the vector-add kernel is very easily recognizable. The vadd function reads in two inputs vectors (in1 and in2) and adds them into the out vector using a simple for loop. The ‘size’ parameter indicates the number of elements in the input and output vector. 
+이 외에 벡터 추가 커널의 기능은 매우 쉽게 인식 할 수 있습니다. vadd 함수는 두 개의 입력 벡터 (in1 및 in2)를 읽고 간단한 for 루프를 사용하여 출력 벡터에 추가합니다. 'size'매개 변수는 입력 및 출력 벡터의 요소 수를 나타냅니다. 
 
-The pragmas are used to map function parameters to distinct kernel ports. By mapping the two inputs parameters to different input ports, the kernel will be able to read both inputs in parallel. As a general rule, and without going into further details in this introductory tutorial, it is important to think about interface requirements of hardware accelerators and they will have a determining impact on maximum achievable performance.
+pragma는 함수 매개 변수를 별개의 커널 포트에 매핑하는 데 사용됩니다. 두 입력 매개 변수를 다른 입력 포트에 매핑하면 커널이 두 입력을 병렬로 읽을 수 있습니다. 일반적으로이 입문 자습서에서 더 자세한 내용을 다루지 않고 하드웨어 가속기의 인터페이스 요구 사항을 고려하는 것이 중요하며 달성 가능한 최대 성능에 결정적인 영향을 미칩니다.
 
-The Vitis online documentation provides comprehensive information on [C++ kernel coding considerations](https://www.xilinx.com/html_docs/xilinx2020_2/vitis_doc/devckernels.html#rjk1519742919747) as well as a complete [pragma reference guide](https://www.xilinx.com/html_docs/xilinx2020_2/vitis_doc/tfo1593136615570.html).
-
-
+Vitis 온라인 문서는 [C ++ 커널 코딩 고려 사항](https://www.xilinx.com/html_docs/xilinx2020_2/vitis_doc/devckernels.html#rjk1519742919747)에 대한 포괄적 인 정보와 전체 [pragma 참조 가이드](https://www.xilinx.com/html_docs/xilinx2020_2/vitis_doc/tfo1593136615570.html)를 제공합니다.
 
 
-## The Source Code for the Host Program 
 
-The source code for the host program is written in C/C++ and uses standard OpenCL APIs to interact with the hardware-accelerated vector-add kernel.
 
-* Open the [`host.cpp`](./example/src/host.cpp) file located in the `src` directory of this tutorial
+## 호스트 프로그램의 소스 코드
 
-There are 4 main steps in the source code for this simple example.
+호스트 프로그램의 소스 코드는 C / C ++로 작성되었으며 표준 OpenCL API를 사용하여 하드웨어 가속 벡터 추가 커널과 상호 작용합니다.
 
-* Step 1: The OpenCL environment is initialized. In this section, the host detects the attached Xilinx device, loads the FPGA binary (.xclbin file) from file and programs it into the first Xilinx device it found. Then a command queue and the kernel object are created. All Vitis applications will have code very similar to the one in this section.
+* 이 튜토리얼의 `src` 디렉토리에 있는 [`host.cpp`](./example/src/host.cpp) 파일을 엽니다.
 
-* Step 2: The application creates the three buffers needed to share data with the kernel: one for each input and one for the output. On data-center platforms, it is more efficient to allocate memory aligned on 4k page boundaries. On embedded platforms, it is more efficient to perform contiguous memory allocation. A simple way of achieving either of these is to let the Xilinx Runtime allocate host memory when creating the buffers. This is done by using the `CL_MEM_ALLOC_HOST_PTR` flag when creating the buffers and then mapping the allocated memory to user-space pointers.
+이 간단한 예제의 소스 코드에는 4 가지 주요 단계가 있습니다.
+
+* 1 단계 : OpenCL 환경이 초기화됩니다. 이 섹션에서 호스트는 연결된 Xilinx 장치를 감지하고 파일에서 FPGA 바이너리 (.xclbin 파일)를로드 한 다음 찾은 첫 번째 Xilinx 장치로 프로그래밍합니다. 그런 다음 명령 대기열과 커널 개체가 생성됩니다. 모든 Vitis 애플리케이션에는이 섹션의 코드와 매우 유사한 코드가 있습니다.
+
+* 2 단계 : 애플리케이션은 커널과 데이터를 공유하는 데 필요한 세 개의 버퍼를 생성합니다. 각 입력에 대해 하나씩, 출력에 대해 하나씩. 데이터 센터 플랫폼에서는 4k 페이지 경계에 정렬 된 메모리를 할당하는 것이 더 효율적입니다. 임베디드 플랫폼에서는 연속적인 메모리 할당을 수행하는 것이 더 효율적입니다. 이들 중 하나를 달성하는 간단한 방법은 버퍼를 생성 할 때 Xilinx 런타임이 호스트 메모리를 할당하도록하는 것입니다. 이는 버퍼를 생성 할 때`CL_MEM_ALLOC_HOST_PTR` 플래그를 사용하고 할당 된 메모리를 사용자 공간 포인터에 매핑함으로써 수행됩니다.
 
 ```cpp
     // Create the buffers and allocate memory   
@@ -66,10 +66,10 @@ There are 4 main steps in the source code for this simple example.
     int *in1 = (int *)q.enqueueMapBuffer(in1_buf, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int) * DATA_SIZE);
 ```
 
-*NOTE: A common alternative is for the application to explicitly allocate host memory and reuse the corresponding pointers when creating the buffers. The approach used in this example was chosen because it is the most portable and efficient across both data-center and embedded platforms.*
+*참고 : 일반적인 대안은 응용 프로그램이 명시 적으로 호스트 메모리를 할당하고 버퍼를 만들 때 해당 포인터를 재사용하는 것입니다. 이 예제에서 사용 된 접근 방식은 데이터 센터 및 임베디드 플랫폼 모두에서 가장 이식 가능하고 효율적이기 때문에 선택되었습니다.*
 
 
-* Step 3: The host program sets the arguments of the kernel, then schedules three operations: the transfers of the two input vectors to device memory, the execution of the kernel, and lastly the transfer of the results back to host memory. These operations are enqueued in the command queue declared in Step 1. It is important to keep in mind that these three function calls are non-blocking. The commands are put in the queue and the Xilinx Runtime is responsible for submitting them to the device. Because the queue used in the host code in this example is an ordered queue, these commands are guaranteed to execute in the specified order. However, the queue could also be an out-of-order queue in which the non-blocking calls would be executed when ready, rather than in order. The call to `q.finish()` is necessary to wait until all enqueued commands run to completion. 
+* 3 단계 : 호스트 프로그램은 커널의 인수를 설정 한 다음, 두 개의 입력 벡터를 장치 메모리로 전송, 커널 실행, 마지막으로 결과를 호스트 메모리로 다시 전송하는 세 가지 작업을 예약합니다. 이러한 작업은 1 단계에서 선언 된 명령 대기열에 추가됩니다.이 세 가지 함수 호출은 비 차단이라는 점을 기억하는 것이 중요합니다. 명령은 대기열에 배치되고 Xilinx 런타임은 명령을 장치에 제출합니다. 이 예제에서 호스트 코드에 사용 된 큐는 순서가 지정된 큐이므로 이러한 명령은 지정된 순서로 실행됩니다. 그러나 큐는 비 차단 호출이 순서가 아닌 준비 될 때 실행되는 비 순차적 큐일 수도 있습니다. 대기열에 포함 된 모든 명령이 완료 될 때까지 기다리려면`q.finish ()`를 호출해야합니다. 
 
 ```cpp
     // Set kernel arguments
@@ -87,17 +87,16 @@ There are 4 main steps in the source code for this simple example.
     q.finish();
 ```
 
-* Step 4: The call to `q.finish()` returns when all previously enqueued operations have completed. In this case, it implies that the output buffer containing the results of the kernel have been migrated back to host memory and can safely be used by the software application. Here the results are simply checked against expected values before the program finishes.
+* 4 단계 : 이전에 대기열에 넣은 모든 작업이 완료되면`q.finish ()`호출이 반환됩니다. 이 경우 커널의 결과를 포함하는 출력 버퍼가 호스트 메모리로 다시 마이그레이션되었으며 소프트웨어 응용 프로그램에서 안전하게 사용할 수 있음을 의미합니다. 여기서는 프로그램이 완료되기 전에 예상 값과 비교하여 결과를 간단히 확인합니다.
+
+
+이 예제는 OpenCL API를 사용하여 하드웨어 가속기와 상호 작용하는 가장 간단한 방법을 보여줍니다. 항상 그렇듯이 추가 정보는 [Vitis 문서](https://www.xilinx.com/html_docs/xilinx2020_1/vitis_doc/devhostapp.html#vpy1519742402284) 에서 찾을 수 있습니다.
 
 
 
-This example shows the simplest way of using OpenCL APIs to interact with the hardware accelerator. As always, additional information can be found in the [Vitis documentation](https://www.xilinx.com/html_docs/xilinx2020_1/vitis_doc/devhostapp.html#vpy1519742402284). 
+## 다음 단계
 
-
-
-## Next Step
-
-Now that you understand the source code for both kernel and the host program, [**Part 4**](./Part4.md) will explain how to compile and run this example.
+이제 커널과 호스트 프로그램의 소스 코드를 이해 했으므로, [**4 단계**](./Part4.md)에서 이 예제를 컴파일하고 실행하는 방법을 설명합니다.
 
  
 
